@@ -1,0 +1,81 @@
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Student {
+  id                     String           @id @default(cuid())
+  fullName               String
+  email                  String           @unique
+  matricNumber           String           @unique
+  department             String
+  level                  String
+  passwordHash           String
+  profileImageUrl        String?
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+  isVerified             Boolean          @default(false)
+
+  receivedFriendRequests FriendRequest[]  @relation("ReceivedFriendRequests")
+  sentFriendRequests     FriendRequest[]  @relation("SentFriendRequests")
+  receivedMessages       Message[]        @relation("ReceivedMessages")
+  sentMessages           Message[]        @relation("SentMessages")
+  sessions               StudentSession[]
+}
+
+model Message {
+  id         String    @id @default(cuid())
+  content    String
+  senderId   String
+  receiverId String
+  createdAt  DateTime  @default(now())
+  readAt     DateTime?
+
+  receiver   Student   @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     Student   @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([senderId, createdAt])
+  @@index([receiverId, createdAt])
+  @@index([receiverId, readAt])
+}
+
+model FriendRequest {
+  id         String              @id @default(cuid())
+  senderId   String
+  receiverId String
+  status     FriendRequestStatus @default(PENDING)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  receiver   Student             @relation("ReceivedFriendRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     Student             @relation("SentFriendRequests", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@index([receiverId, status])
+  @@index([senderId, status])
+}
+
+model StudentSession {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  studentId String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([expiresAt])
+}
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}

@@ -1,7 +1,57 @@
 
+"use client";
+
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
 
 export default function SignupPage() {
+  const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage("");
+    setIsError(false);
+    setIsSubmitting(true);
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    const payload = {
+      fullName: String(formData.get("fullName") ?? ""),
+      email: String(formData.get("email") ?? ""),
+      matricNumber: String(formData.get("matricNumber") ?? ""),
+      department: String(formData.get("department") ?? ""),
+      level: String(formData.get("level") ?? ""),
+      password: String(formData.get("password") ?? ""),
+    };
+
+    try {
+      const response = await fetch("/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setIsError(true);
+        setMessage(result.message || "Registration failed. Please try again.");
+        return;
+      }
+
+      setMessage(result.message || "Registration successful!");
+      form.reset();
+    } catch {
+      setIsError(true);
+      setMessage("Unable to connect. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#f7f8fc] px-4 py-10 text-slate-900">
       <div className="w-full max-w-lg">
@@ -26,7 +76,7 @@ export default function SignupPage() {
             </p>
           </div>
 
-          <form className="space-y-5">
+         <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label htmlFor="fullName" className="mb-2 block text-sm font-semibold">
                 Full name
@@ -127,12 +177,27 @@ export default function SignupPage() {
               </p>
             </div>
 
-            <button
-              type="button"
-              className="w-full rounded-xl bg-indigo-600 px-5 py-4 font-bold text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700"
-            >
-              Create student account
-            </button>
+            
+<button
+  type="submit"
+  disabled={isSubmitting}
+  className="w-full rounded-xl bg-indigo-600 px-5 py-4 font-bold text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+>
+  {isSubmitting ? "Creating account..." : "Create student account"}
+</button>
+
+{message && (
+  <p
+    role="status"
+    aria-live="polite"
+    className={`text-center text-sm ${
+      isError ? "text-red-600" : "text-green-700"
+    }`}
+  >
+    {message}
+  </p>
+)}
+
 
             <p className="text-center text-sm text-slate-500">
               Already have an account?{" "}

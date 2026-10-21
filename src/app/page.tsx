@@ -1,7 +1,58 @@
 
+"use client";
+
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
 
-export default function Home() {
+
+export default function SignupPage() {
+  const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage("");
+    setIsError(false);
+    setIsSubmitting(true);
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    const payload = {
+      fullName: String(formData.get("fullName") ?? ""),
+      email: String(formData.get("email") ?? ""),
+      matricNumber: String(formData.get("matricNumber") ?? ""),
+      department: String(formData.get("department") ?? ""),
+      level: String(formData.get("level") ?? ""),
+      password: String(formData.get("password") ?? ""),
+    };
+
+    try {
+      const response = await fetch("/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setIsError(true);
+        setMessage(result.message || "Registration failed. Please try again.");
+        return;
+      }
+
+      setMessage(result.message || "Registration successful!");
+      form.reset();
+    } catch {
+      setIsError(true);
+      setMessage("Unable to connect. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[#f7f8fc] text-slate-900">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
