@@ -1,7 +1,8 @@
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider      = "prisma-client"
+  output        = "../src/generated/prisma"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
@@ -30,15 +31,15 @@ model Student {
 }
 
 model Message {
-  id         String    @id @default(cuid())
+  id         String   @id @default(cuid())
   content    String
   senderId   String
   receiverId String
-  createdAt  DateTime  @default(now())
+  createdAt  DateTime @default(now())
   readAt     DateTime?
 
-  receiver   Student   @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
-  sender     Student   @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver   Student  @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     Student  @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
 
   @@index([senderId, createdAt])
   @@index([receiverId, createdAt])
