@@ -3,6 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import MobileNav from "@/components/MobileNav";
 
 type StudentProfile = {
   id: string;
@@ -404,6 +405,8 @@ export default function ProfilePage() {
           BOUESTI CHAT · Your campus. Your people.
         </p>
       </div>
+
+      <MobileNav />
     </main>
   );
 }

@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import MobileNav from "@/components/MobileNav";
 
 type Student = {
   id: string;
@@ -185,10 +186,7 @@ export default function MessagesPage() {
           )
         );
 
-        if (
-          initialLoadRef.current ||
-          previousLastId !== nextLastId
-        ) {
+        if (initialLoadRef.current || previousLastId !== nextLastId) {
           bottomRef.current?.scrollIntoView({
             behavior: initialLoadRef.current ? "auto" : "smooth",
           });
@@ -564,16 +562,8 @@ export default function MessagesPage() {
                                 <span>{formatTime(message.createdAt)}</span>
                                 {isMine && (
                                   <span
-                                    title={
-                                      message.readAt
-                                        ? "Read"
-                                        : "Sent"
-                                    }
-                                    aria-label={
-                                      message.readAt
-                                        ? "Read"
-                                        : "Sent"
-                                    }
+                                    title={message.readAt ? "Read" : "Sent"}
+                                    aria-label={message.readAt ? "Read" : "Sent"}
                                   >
                                     {message.readAt ? "✓✓" : "✓"}
                                   </span>
@@ -654,6 +644,8 @@ export default function MessagesPage() {
           BOUESTI CHAT · Stay connected with your campus people.
         </p>
       </div>
+
+      <MobileNav />
     </main>
   );
 }

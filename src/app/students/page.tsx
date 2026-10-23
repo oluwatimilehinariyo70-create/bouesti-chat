@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import MobileNav from "@/components/MobileNav";
 
 type Student = {
   id: string;
@@ -260,25 +261,38 @@ export default function StudentsPage() {
   const friendIds = new Set(friendData.friends.map((friend) => friend.id));
 
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-10 text-white">
+    <main className="min-h-screen overflow-x-hidden bg-slate-950 px-4 py-6 pb-4 text-white sm:px-6 sm:py-10">
       <div className="mx-auto max-w-4xl">
         <header className="mb-8">
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <Link href="/" className="text-sm font-bold text-cyan-400">
-              BOUESTI CHAT
+          <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <Link
+              href="/students"
+              className="flex items-center gap-3 self-start text-sm font-bold text-cyan-400"
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500 text-lg font-black text-slate-950">
+                B
+              </span>
+              <span>
+                <span className="block text-base font-extrabold text-white">
+                  BOUESTI CHAT
+                </span>
+                <span className="block text-xs font-normal text-slate-400">
+                  Your campus. Your people.
+                </span>
+              </span>
             </Link>
 
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
               <Link
                 href="/profile"
-                className="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold hover:border-cyan-400"
+                className="rounded-lg border border-slate-700 px-3 py-2.5 text-center text-sm font-semibold transition hover:border-cyan-400"
               >
-                My Profile
+                👤 My Profile
               </Link>
 
               <Link
                 href="/messages"
-                className="rounded-lg bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-400"
+                className="rounded-lg bg-cyan-500 px-3 py-2.5 text-center text-sm font-semibold text-slate-950 transition hover:bg-cyan-400"
               >
                 💬 Messages
               </Link>
@@ -286,22 +300,22 @@ export default function StudentsPage() {
               <button
                 type="button"
                 onClick={logOut}
-                className="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold hover:border-cyan-400"
+                className="col-span-2 rounded-lg border border-slate-700 px-3 py-2.5 text-sm font-semibold transition hover:border-red-400 hover:text-red-300 sm:col-span-1"
               >
                 Log out
               </button>
             </div>
           </div>
 
-          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-cyan-400">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400 sm:text-sm sm:tracking-[0.25em]">
             YOUR CAMPUS COMMUNITY
           </p>
 
-          <h1 className="text-3xl font-bold sm:text-4xl">
+          <h1 className="text-3xl font-bold leading-tight sm:text-4xl">
             Find your campus people
           </h1>
 
-          <p className="mt-3 text-slate-300">
+          <p className="mt-3 text-sm leading-6 text-slate-300 sm:text-base">
             Discover classmates and connect with registered students.
           </p>
         </header>
@@ -310,7 +324,7 @@ export default function StudentsPage() {
           <p
             role="status"
             aria-live="polite"
-            className={`mb-6 rounded-xl p-4 ${
+            className={`mb-6 break-words rounded-xl p-4 text-sm sm:text-base ${
               isError
                 ? "border border-red-800 bg-red-950 text-red-200"
                 : "bg-slate-900 text-slate-300"
@@ -320,7 +334,7 @@ export default function StudentsPage() {
           </p>
         )}
 
-        <section className="mb-10 rounded-2xl border border-slate-800 bg-slate-900 p-5">
+        <section className="mb-10 rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:p-5">
           <h2 className="mb-4 text-xl font-bold">Find students</h2>
 
           <form
@@ -332,14 +346,14 @@ export default function StudentsPage() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Name, department, level or matric number"
-              className="min-w-0 flex-1 rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-cyan-400"
+              className="min-h-12 min-w-0 flex-1 rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-base outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20"
               aria-label="Search students"
             />
 
             <button
               type="submit"
               disabled={loading}
-              className="rounded-xl bg-cyan-500 px-6 py-3 font-semibold text-slate-950 hover:bg-cyan-400 disabled:opacity-60"
+              className="min-h-12 rounded-xl bg-cyan-500 px-6 py-3 font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Searching..." : "Search"}
             </button>
@@ -363,11 +377,13 @@ export default function StudentsPage() {
                     />
 
                     <div className="min-w-0">
-                      <h3 className="font-semibold">{student.fullName}</h3>
-                      <p className="text-sm text-slate-400">
+                      <h3 className="break-words font-semibold">
+                        {student.fullName}
+                      </h3>
+                      <p className="break-words text-sm text-slate-400">
                         {student.department} · Level {student.level}
                       </p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-1 break-words text-xs text-slate-500">
                         Matric: {student.matricNumber}
                       </p>
                     </div>
@@ -377,7 +393,7 @@ export default function StudentsPage() {
                     type="button"
                     disabled={isFriend || requestSent || isBusy}
                     onClick={() => sendFriendRequest(student.id)}
-                    className="rounded-lg bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300"
+                    className="min-h-11 w-full shrink-0 rounded-lg bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300 sm:w-auto"
                   >
                     {isFriend
                       ? "Already friends"
@@ -394,14 +410,14 @@ export default function StudentsPage() {
         </section>
 
         <section className="mb-10">
-          <h2 className="mb-4 text-xl font-bold">
+          <h2 className="mb-4 text-lg font-bold sm:text-xl">
             Incoming requests ({friendData.incoming.length})
           </h2>
 
           {loadingFriends ? (
-            <p className="text-slate-400">Loading requests...</p>
+            <p className="text-sm text-slate-400">Loading requests...</p>
           ) : friendData.incoming.length === 0 ? (
-            <p className="rounded-xl bg-slate-900 p-4 text-slate-400">
+            <p className="rounded-xl bg-slate-900 p-4 text-sm text-slate-400">
               No incoming friend requests yet.
             </p>
           ) : (
@@ -418,31 +434,31 @@ export default function StudentsPage() {
                     />
 
                     <div className="min-w-0">
-                      <h3 className="font-semibold">
+                      <h3 className="break-words font-semibold">
                         {request.sender?.fullName ?? "Student"}
                       </h3>
-                      <p className="text-sm text-slate-400">
+                      <p className="break-words text-sm text-slate-400">
                         {request.sender?.department} · Level{" "}
                         {request.sender?.level}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-2 gap-2 sm:flex">
                     <button
                       type="button"
                       disabled={busyId === request.id}
                       onClick={() => respondToRequest(request.id, "accept")}
-                      className="rounded-lg bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-60"
+                      className="min-h-11 rounded-lg bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:opacity-60"
                     >
-                      Accept
+                      {busyId === request.id ? "Please wait..." : "Accept"}
                     </button>
 
                     <button
                       type="button"
                       disabled={busyId === request.id}
                       onClick={() => respondToRequest(request.id, "decline")}
-                      className="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold hover:border-red-400 disabled:opacity-60"
+                      className="min-h-11 rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold transition hover:border-red-400 disabled:opacity-60"
                     >
                       Decline
                     </button>
@@ -454,12 +470,12 @@ export default function StudentsPage() {
         </section>
 
         <section className="mb-10">
-          <h2 className="mb-4 text-xl font-bold">
+          <h2 className="mb-4 text-lg font-bold sm:text-xl">
             Sent requests ({friendData.outgoing.length})
           </h2>
 
           {friendData.outgoing.length === 0 ? (
-            <p className="rounded-xl bg-slate-900 p-4 text-slate-400">
+            <p className="rounded-xl bg-slate-900 p-4 text-sm text-slate-400">
               You haven&apos;t sent any pending requests.
             </p>
           ) : (
@@ -469,17 +485,17 @@ export default function StudentsPage() {
                   key={request.id}
                   className="rounded-xl border border-slate-800 bg-slate-900 p-4"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
                     <Avatar
                       name={request.receiver?.fullName ?? "Student"}
                       imageUrl={request.receiver?.profileImageUrl}
                     />
 
                     <div className="min-w-0">
-                      <h3 className="font-semibold">
+                      <h3 className="break-words font-semibold">
                         {request.receiver?.fullName ?? "Student"}
                       </h3>
-                      <p className="text-sm text-slate-400">
+                      <p className="break-words text-sm text-slate-400">
                         {request.receiver?.department} · Level{" "}
                         {request.receiver?.level}
                       </p>
@@ -495,12 +511,12 @@ export default function StudentsPage() {
         </section>
 
         <section>
-          <h2 className="mb-4 text-xl font-bold">
+          <h2 className="mb-4 text-lg font-bold sm:text-xl">
             My friends ({friendData.friends.length})
           </h2>
 
           {friendData.friends.length === 0 ? (
-            <p className="rounded-xl bg-slate-900 p-4 text-slate-400">
+            <p className="rounded-xl bg-slate-900 p-4 text-sm text-slate-400">
               When someone accepts your request, they&apos;ll appear here.
             </p>
           ) : (
@@ -510,7 +526,7 @@ export default function StudentsPage() {
                   key={friend.id}
                   className="rounded-xl border border-slate-800 bg-slate-900 p-4"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
                     <Avatar
                       name={friend.fullName}
                       imageUrl={friend.profileImageUrl}
@@ -518,11 +534,13 @@ export default function StudentsPage() {
                     />
 
                     <div className="min-w-0">
-                      <h3 className="font-semibold">{friend.fullName}</h3>
-                      <p className="mt-1 text-sm text-slate-400">
+                      <h3 className="break-words font-semibold">
+                        {friend.fullName}
+                      </h3>
+                      <p className="mt-1 break-words text-sm text-slate-400">
                         {friend.department} · Level {friend.level}
                       </p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-1 break-words text-xs text-slate-500">
                         Matric: {friend.matricNumber}
                       </p>
                     </div>
@@ -530,7 +548,7 @@ export default function StudentsPage() {
 
                   <Link
                     href="/messages"
-                    className="mt-4 inline-block text-sm font-semibold text-cyan-400 hover:text-cyan-300"
+                    className="mt-4 inline-block min-h-11 py-3 text-sm font-semibold text-cyan-400 transition hover:text-cyan-300"
                   >
                     Open Messages →
                   </Link>
@@ -544,6 +562,8 @@ export default function StudentsPage() {
           Made for the BOUESTI student community.
         </footer>
       </div>
+
+      <MobileNav />
     </main>
   );
 }
