@@ -134,6 +134,9 @@ export default function MessagesPage() {
   const recordingCancelledRef = useRef(false);
   const recordingSecondsRef = useRef(0);
   const pendingImageRef = useRef<File | null>(null);
+  const notificationCountsRef = useRef<Record<string, number>>({});
+  const notificationsInitializedRef = useRef(false);
+
 
   const selectedFriend =
     friends.find((friend) => friend.id === selectedFriendId) ?? null;
@@ -161,8 +164,51 @@ export default function MessagesPage() {
         throw new Error(data.message || "Unable to load friends.");
       }
 
-      const list: Student[] = data.friends ?? [];
-      setFriends(list);
+      
+const list: Student[] = data.friends ?? [];
+
+const nextCounts: Record<string, number> = {};
+
+for (const friend of list) {
+  const unreadCount = friend.unreadCount ?? 0;
+  nextCounts[friend.id] = unreadCount;
+
+  const previousCount = notificationCountsRef.current[friend.id];
+
+  if (
+    notificationsInitializedRef.current &&
+    previousCount !== undefined &&
+    unreadCount > previousCount &&
+    friend.id !== selectedFriendRef.current &&
+    document.hidden &&
+    typeof window !== "undefined" &&
+    "Notification" in window &&
+    Notification.permission === "granted"
+  ) {
+    const notification = new Notification(
+      `New message from ${friend.fullName}`,
+      {
+        body:
+          unreadCount === 1
+            ? "You have a new message on BOUESTI CHAT."
+            : `You have ${unreadCount} unread messages.`,
+        tag: `bouesti-chat-${friend.id}`,
+      }
+    );
+
+    notification.onclick = () => {
+      window.focus();
+      window.location.href = "/messages";
+      notification.close();
+    };
+  }
+}
+
+notificationCountsRef.current = nextCounts;
+notificationsInitializedRef.current = true;
+
+setFriends(list);
+
 
       setSelectedFriendId((current) => {
         if (current && list.some((friend) => friend.id === current)) {
@@ -608,12 +654,42 @@ export default function MessagesPage() {
             </div>
           </Link>
 
-          <Link
-            href="/students"
-            className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold transition hover:bg-slate-50"
-          >
-            ← Students
-          </Link>
+          <div className="flex items-center gap-2">
+  <button
+    type="button"
+    onClick={async () => {
+      if (!("Notification" in window)) {
+        setError("Your browser does not support notifications.");
+        return;
+      }
+
+      try {
+        const permission = await Notification.requestPermission();
+
+        if (permission === "granted") {
+          setNotice("Notifications enabled successfully!");
+          setError("");
+        } else {
+          setNotice(
+            "Notifications are not enabled. Allow them in your browser settings."
+          );
+        }
+      } catch {
+        setError("Unable to enable browser notifications.");
+      }
+    }}
+    className="rounded-xl border border-indigo-200 px-3 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50"
+  >
+    🔔 Enable notifications
+  </button>
+
+  <Link
+    href="/students"
+    className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold transition hover:bg-slate-50"
+  >
+    ← Students
+  </Link>
+</div>
         </div>
       </header>
 
