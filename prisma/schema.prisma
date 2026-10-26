@@ -11,35 +11,45 @@ datasource db {
 }
 
 model Student {
-  id                     String           @id @default(cuid())
-  fullName               String
-  email                  String           @unique
-  matricNumber           String           @unique
-  department             String
-  level                  String
-  passwordHash           String
-  profileImageUrl        String?
-  createdAt              DateTime         @default(now())
-  updatedAt              DateTime         @updatedAt
-  isVerified             Boolean          @default(false)
+  id              String   @id @default(cuid())
+  fullName        String
+  email           String   @unique
+  matricNumber    String   @unique
+  department      String
+  level           String
+  passwordHash    String
+  profileImageUrl String?
+  isVerified      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  receivedFriendRequests FriendRequest[]  @relation("ReceivedFriendRequests")
-  sentFriendRequests     FriendRequest[]  @relation("SentFriendRequests")
-  receivedMessages       Message[]        @relation("ReceivedMessages")
-  sentMessages           Message[]        @relation("SentMessages")
-  sessions               StudentSession[]
+  sentMessages     Message[]       @relation("SentMessages")
+  receivedMessages Message[]       @relation("ReceivedMessages")
+
+  sentFriendRequests     FriendRequest[] @relation("SentFriendRequests")
+  receivedFriendRequests FriendRequest[] @relation("ReceivedFriendRequests")
+
+  sessions StudentSession[]
+
+  campusPosts     CampusPost[]
+  campusComments CampusComment[]
+  campusReactions CampusReaction[]
+  campusPollVotes CampusPollVote[]
 }
 
 model Message {
-  id         String   @id @default(cuid())
-  content    String
-  senderId   String
-  receiverId String
-  createdAt  DateTime @default(now())
-  readAt     DateTime?
+  id            String      @id @default(cuid())
+  content       String
+  type          MessageType @default(TEXT)
+  mediaUrl      String?
+  mediaMimeType String?
+  senderId      String
+  receiverId    String
+  createdAt     DateTime    @default(now())
+  readAt        DateTime?
 
-  receiver   Student  @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
-  sender     Student  @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  sender   Student @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver Student @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
 
   @@index([senderId, createdAt])
   @@index([receiverId, createdAt])
@@ -54,12 +64,12 @@ model FriendRequest {
   createdAt  DateTime            @default(now())
   updatedAt  DateTime            @updatedAt
 
-  receiver   Student             @relation("ReceivedFriendRequests", fields: [receiverId], references: [id], onDelete: Cascade)
-  sender     Student             @relation("SentFriendRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  sender   Student @relation("SentFriendRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver Student @relation("ReceivedFriendRequests", fields: [receiverId], references: [id], onDelete: Cascade)
 
   @@unique([senderId, receiverId])
-  @@index([receiverId, status])
   @@index([senderId, status])
+  @@index([receiverId, status])
 }
 
 model StudentSession {
@@ -69,14 +79,104 @@ model StudentSession {
   expiresAt DateTime
   createdAt DateTime @default(now())
 
-  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
   @@index([expiresAt])
+}
+
+model CampusPost {
+  id        String         @id @default(cuid())
+  content   String
+  type      CampusPostType @default(POST)
+  authorId  String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime      @updatedAt
+
+  author    Student          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments  CampusComment[]
+  reactions CampusReaction[]
+  pollOptions CampusPollOption[]
+
+  @@index([createdAt])
+  @@index([authorId, createdAt])
+}
+
+model CampusComment {
+  id        String   @id @default(cuid())
+  content   String
+  postId    String
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  post   CampusPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author Student    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+  @@index([authorId])
+}
+
+model CampusReaction {
+  id        String             @id @default(cuid())
+  type      CampusReactionType
+  postId    String
+  studentId String
+  createdAt DateTime           @default(now())
+
+  post    CampusPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  student Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, studentId])
+  @@index([studentId])
+}
+
+model CampusPollOption {
+  id        String   @id @default(cuid())
+  text      String
+  postId    String
+  createdAt DateTime @default(now())
+
+  post  CampusPost       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  votes CampusPollVote[]
+
+  @@index([postId])
+}
+
+model CampusPollVote {
+  id        String   @id @default(cuid())
+  optionId  String
+  studentId String
+  createdAt DateTime @default(now())
+
+  option  CampusPollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  student Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([optionId, studentId])
+  @@index([studentId])
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  VOICE
 }
 
 enum FriendRequestStatus {
   PENDING
   ACCEPTED
   DECLINED
+}
+
+enum CampusReactionType {
+  LAUGH
+  LOVE
+  FIRE
+  CRY
+  EYES
+}
+
+enum CampusPostType {
+  POST
+  POLL
 }
